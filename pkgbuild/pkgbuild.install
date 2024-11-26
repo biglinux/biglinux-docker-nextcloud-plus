@@ -113,7 +113,8 @@ post_install() {
 
     # Configure Collabora Online server URL with the container IP
     echo "Configuring Collabora Online server URL for IP $ip ..."
-    docker exec -u www-data nextcloud php occ config:app:set richdocuments wopi_url --value="http://$ip:9980"
+    #docker exec -u www-data nextcloud php occ config:app:set richdocuments wopi_url --value="http://$ip:9980"
+    docker exec -u www-data nextcloud sh -c "php occ config:app:set richdocuments wopi_url --value='http://$ip:9980'"
 
     # Configure Allow list for WOPI requests
     echo "Configuring Allow list for WOPI requests..."
@@ -168,7 +169,7 @@ post_remove() {
     docker rmi nextcloud:stable
     docker rmi redis:alpine
     docker rmi collabora/code:latest
-    docker rmi nginx:latest
+    docker rmi nginx:alpie
 
     # Removing networks ..
     docker network rm -f nextcloud-net > /dev/null
