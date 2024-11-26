@@ -3,25 +3,20 @@ CURRENT_USER=$(who | awk 'NR==1{print $1}')
 CONFIG_DIR="/etc/docker-biglinux/nextcloud-plus"
 
 update_ip() {
-    echo "Retrieving IP addresses from available interfaces..."
     interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -E '^(eth|enp|wlp|wlo)')
 
     for iface in $interfaces; do
-        # We get the first valid IP found
         ip=$(ip -4 addr show "$iface" | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
         if [[ -n "$ip" ]]; then
-            echo "Interface: $iface, IP: $ip"
-            echo "Updating configuration files with IP: $ip..."
+            echo "$ip"
             sed -i "s/GET_IP/$ip/g" $CONFIG_DIR/*
             sed -i "s/GET_IP/$ip/g" /usr/share/applications/docker-nextcloud-plus.desktop
-            echo "$ip"
-            return
+            return 0
         fi
     done
     echo "No valid IP found." >&2
     exit 1
 }
-
 
 # Executed after package installation
 post_install() {
@@ -113,8 +108,7 @@ post_install() {
 
     # Configure Collabora Online server URL with the container IP
     echo "Configuring Collabora Online server URL for IP $ip ..."
-    #docker exec -u www-data nextcloud php occ config:app:set richdocuments wopi_url --value="http://$ip:9980"
-    docker exec -u www-data nextcloud sh -c "php occ config:app:set richdocuments wopi_url --value='http://$ip:9980'"
+    docker exec -u www-data nextcloud php occ config:app:set richdocuments wopi_url --value="http://${ip}:9980"
 
     # Configure Allow list for WOPI requests
     echo "Configuring Allow list for WOPI requests..."
@@ -165,13 +159,16 @@ pre_remove() {
 post_remove() {
     # Remove the Docker image
     echo "Removing the Nextcloud-Plus Docker image..."
-    docker rmi postgres:16-alpine
+    docker rmi postgres:17-alpine
+    docker rmi postgres:latest
     docker rmi nextcloud:stable
     docker rmi redis:alpine
     docker rmi collabora/code:latest
-    docker rmi nginx:alpie
+    docker rmi nginx:alpine
 
     # Removing networks ..
     docker network rm -f nextcloud-net > /dev/null
     docker network rm -f collabora-net > /dev/null
 } 
+
+
