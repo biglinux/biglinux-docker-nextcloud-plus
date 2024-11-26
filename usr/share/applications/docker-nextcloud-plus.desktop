@@ -3,6 +3,6 @@ Version=1.0
 Terminal=false
 Type=Application
 Name=NextCloud Plus
-Exec=/usr/bin/xdg-open http://172.16.255.254:8286
+Exec=/usr/bin/xdg-open http://GET_IP:8286
 Icon=/usr/share/icons/hicolor/scalable/apps/docker-nextcloud-plus.svg
 Categories=Docker;
