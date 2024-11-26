@@ -4,7 +4,7 @@ CONFIG_DIR="/etc/docker-biglinux/nextcloud-plus"
 
 update_ip() {
     echo "Retrieving IP addresses from available interfaces..."
-    interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -E '^(eth|enp|wlp)')
+    interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -E '^(eth|enp|wlp|wlo)')
 
     for iface in $interfaces; do
         # We get the first valid IP found
@@ -13,6 +13,7 @@ update_ip() {
             echo "Interface: $iface, IP: $ip"
             echo "Updating configuration files with IP: $ip..."
             sed -i "s/GET_IP/$ip/g" $CONFIG_DIR/*
+            sed -i "s/GET_IP/$ip/g" /usr/share/applications/docker-nextcloud-plus.desktop
             echo "$ip"
             return
         fi
@@ -111,7 +112,7 @@ post_install() {
     docker exec -u www-data nextcloud php occ app:enable richdocuments
 
     # Configure Collabora Online server URL with the container IP
-    echo "Configuring Collabora Online server URL..."
+    echo "Configuring Collabora Online server URL for IP $ip ..."
     docker exec -u www-data nextcloud php occ config:app:set richdocuments wopi_url --value="http://$ip:9980"
 
     # Configure Allow list for WOPI requests
@@ -163,7 +164,7 @@ pre_remove() {
 post_remove() {
     # Remove the Docker image
     echo "Removing the Nextcloud-Plus Docker image..."
-    docker rmi postgres:15-alpine
+    docker rmi postgres:16-alpine
     docker rmi nextcloud:stable
     docker rmi redis:alpine
     docker rmi collabora/code:latest
