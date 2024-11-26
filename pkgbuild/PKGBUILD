@@ -1,5 +1,4 @@
 # Maintainer: Tales A. Mendonça <talesam@gmail.com>
-# Maintainer: Leonardo Berbert  <leo4berbert@gmail.com>
 
 pkgname=biglinux-docker-nextcloud-plus
 pkgdesc="Content Management System (CMS) that allows for easy creation and management of websites, blogs, and online stores."
